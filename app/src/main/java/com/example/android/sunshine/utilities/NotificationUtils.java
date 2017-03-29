@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.RemoteInput;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 
@@ -94,6 +95,27 @@ public class NotificationUtils {
             /* getSmallArtResourceIdForWeatherCondition returns the proper art to show given an ID */
             int smallArtResourceId = SunshineWeatherUtils
                     .getSmallArtResourceIdForWeatherCondition(weatherId);
+
+
+
+
+
+            // Create a WearableExtender to add functionality for wearables
+            NotificationCompat.WearableExtender wearableExtender =
+                    new NotificationCompat.WearableExtender()
+                    .setHintHideIcon(true)
+                    .setBackground(largeIcon);
+
+
+
+
+
+
+
+
+
+
+
 
             /*
              * NotificationCompat Builder is a very convenient way to build backward-compatible

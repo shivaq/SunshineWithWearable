@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SunshineWithWearable.iml" filepath="$PROJECT_DIR$/SunshineWithWearable.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sunshinewatchface/sunshinewatchface.iml" filepath="$PROJECT_DIR$/sunshinewatchface/sunshinewatchface.iml" />
     </modules>
   </component>
 </project>
