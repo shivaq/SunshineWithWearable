@@ -16,4 +16,9 @@
 
     <!-- the activated state color for a forecast list item -->
     <color name="activated">#E0E0E0</color>
+
+
+    <color name="text_date">@color/secondary_text</color>
+
+
 </resources>
