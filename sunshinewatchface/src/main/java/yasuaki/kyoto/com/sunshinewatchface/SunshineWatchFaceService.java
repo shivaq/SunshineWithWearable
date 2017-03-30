@@ -138,8 +138,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         Calendar mCalendar;
         Date mDate;
         String mDateString;
-        String mHighTemp;
-        String mLowTemp;
+        String mHighTemp = getString(R.string.no_weather_data);
+        String mLowTemp = getString(R.string.no_weather_data);
         Bitmap mWeatheIcon;
 
         java.text.DateFormat mTimeFormat;
@@ -207,7 +207,33 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             mDate = new Date();
             mDateString = (android.text.format.DateFormat.format("EEE, MMM dd yyyy", mCalendar)).toString();
             mTimeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
+
+            if(mHighTemp.equals(getString(R.string.no_weather_data))){
+                //TODO: Ask phone to send data
+
+            }
         }
+
+//        private class AskSendingWeatherDataTask extends  AsyncTask<Void, Void, Void>{
+//
+//            @Override
+//            protected Void doInBackground(Void... params) {
+//                Collection<String> nodes = getNodes();
+//                for(String node:nodes){
+//                    askWeatherDataMessage(node);
+//                }
+//                return null;
+//            }
+//        }
+
+        private void askWeatherDataMessage(String node){
+
+        }
+
+
+
+
+
 
         @Override
         public void onDestroy() {
@@ -352,10 +378,12 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 //            String date = mSdf.format(mCalendar.getTime());
             canvas.drawText(mDateString, mXOffset, mYOffsetForDate, mDatePaint);
 
-            String highTemp = "25°";
+//            String highTemp = "25°";
+            String highTemp = mHighTemp;
             canvas.drawText(highTemp, mXOffsetForHigh, mYOffsetForTemperature, mHighTempPaint);
 
-            String lowTemp = "16°";
+//            String lowTemp = "16°";
+            String lowTemp = mLowTemp;
             canvas.drawText(lowTemp, mXOffsetForLow, mYOffsetForTemperature, mLowTempPaint);
         }
 

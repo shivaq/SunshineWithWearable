@@ -3,4 +3,5 @@
     <string name="message">Watch face tapped</string>
     <string name="my_digital_name">Sunshine Face</string>
     <string name="label_watch_face">Sunshine Face</string>
+    <string name="no_weather_data">no data</string>
 </resources>
