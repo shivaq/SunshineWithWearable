@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package yasuaki.kyoto.com.sunshinewatchface;
+package com.example.android.sunshine;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -122,11 +122,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
 
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(SunshineWatchFaceService.this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Wearable.API)
-                .build();
+        GoogleApiClient mGoogleApiClient;
 
         Paint mBackgroundPaint;
         Paint mTimePaint;
@@ -171,6 +167,16 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
 
+            mGoogleApiClient = new GoogleApiClient.Builder(SunshineWatchFaceService.this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Wearable.API)
+                    .build();
+            mGoogleApiClient.connect();
+
+
+            Log.d(TAG, "onCreate: isConnected" + mGoogleApiClient.isConnected());
+
             setWatchFaceStyle(new WatchFaceStyle.Builder(SunshineWatchFaceService.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
@@ -208,31 +214,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             mDateString = (android.text.format.DateFormat.format("EEE, MMM dd yyyy", mCalendar)).toString();
             mTimeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
 
-            if(mHighTemp.equals(getString(R.string.no_weather_data))){
-                //TODO: Ask phone to send data
-
-            }
         }
-
-//        private class AskSendingWeatherDataTask extends  AsyncTask<Void, Void, Void>{
-//
-//            @Override
-//            protected Void doInBackground(Void... params) {
-//                Collection<String> nodes = getNodes();
-//                for(String node:nodes){
-//                    askWeatherDataMessage(node);
-//                }
-//                return null;
-//            }
-//        }
-
-        private void askWeatherDataMessage(String node){
-
-        }
-
-
-
-
 
 
         @Override
@@ -251,6 +233,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onVisibilityChanged(boolean visible) {
+            Log.d(TAG, "onVisibilityChanged: ");
             super.onVisibilityChanged(visible);
 
             if (visible) {
@@ -269,6 +252,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         }
 
         private void registerReceiver() {
+            Log.d(TAG, "registerReceiver: ");
             if (mRegisteredTimeZoneReceiver) {
                 return;
             }
@@ -287,6 +271,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onApplyWindowInsets(WindowInsets insets) {
+            Log.d(TAG, "onApplyWindowInsets: ");
             super.onApplyWindowInsets(insets);
 
             // Load resources that have alternate values for round watches.
@@ -321,6 +306,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
+            Log.d(TAG, "onAmbientModeChanged: ");
             super.onAmbientModeChanged(inAmbientMode);
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
@@ -341,6 +327,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
          */
         @Override
         public void onTapCommand(int tapType, int x, int y, long eventTime) {
+            Log.d(TAG, "onTapCommand: ");
             switch (tapType) {
                 case TAP_TYPE_TOUCH:
                     // The user has started touching the screen.
@@ -360,6 +347,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
+            Log.d(TAG, "onDraw: ");
             // Draw the background.
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
@@ -426,22 +414,24 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onCapabilityChanged(CapabilityInfo capabilityInfo) {
-
+            Log.d(TAG, "onCapabilityChanged: ");
         }
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-
+            Log.d(TAG, "onConnected: isconnected " + mGoogleApiClient.isConnected());
+            Wearable.DataApi.addListener(mGoogleApiClient, this);
         }
+
 
         @Override
         public void onConnectionSuspended(int i) {
-
+            Log.d(TAG, "onConnectionSuspended: ");
         }
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+            Log.d(TAG, "onConnectionFailed: ");
         }
 
         @Override
@@ -476,7 +466,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 if (params.length > 0) {
 
                     Asset asset = params[0];
-                    // ストリームで画像をデコードしていく
                     InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
                             mGoogleApiClient, asset).await().getInputStream();
 

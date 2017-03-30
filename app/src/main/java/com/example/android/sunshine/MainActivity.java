@@ -38,7 +38,7 @@ import com.example.android.sunshine.sync.SunshineSyncUtils;
 
 public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
-        ForecastAdapter.ForecastAdapterOnClickHandler {
+        ForecastAdapter.ForecastAdapterOnClickHandler{
 
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -86,8 +86,6 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_forecast);
         getSupportActionBar().setElevation(0f);
 
-        ConnectWearService connectWearService = new ConnectWearService();
-        connectWearService.sendWeatherToWear(this);
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -343,18 +341,4 @@ public class MainActivity extends AppCompatActivity implements
 
         return super.onOptionsItemSelected(item);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
