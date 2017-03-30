@@ -151,6 +151,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             }
         };
         float mXOffset;
+        float mXOffsetForWeatherIcon;
         float mXOffsetForHigh;
         float mXOffsetForLow;
         float mYOffsetForTime;
@@ -270,9 +271,12 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             float textSize = resources.getDimension(isRound
                     ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
             mXOffsetForHigh = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset_for_high);
+                    ? R.dimen.digital_x_offset_for_high_round : R.dimen.digital_x_offset_for_high);
             mXOffsetForLow = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset_for_low);
+                    ? R.dimen.digital_x_offset_for_low_round : R.dimen.digital_x_offset_for_low);
+
+            mXOffsetForWeatherIcon = resources.getDimension(isRound
+                    ? R.dimen.digital_x_offset_for_image_round : R.dimen.digital_x_offset_for_image);
 
             mTimePaint.setTextSize(textSize);
         }
