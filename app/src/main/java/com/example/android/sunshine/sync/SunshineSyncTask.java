@@ -104,11 +104,6 @@ public class SunshineSyncTask {
                     NotificationUtils.notifyUserOfNewWeather(context);
                 }
 
-                MyService myService = new MyService();
-                //Pass weather info if any wear device is connected.
-                if(MyService.isConnected()){
-                    MyService.sendWeatherToWear(context);
-                }
 
             /* If the code reaches this point, we have successfully performed our sync */
 

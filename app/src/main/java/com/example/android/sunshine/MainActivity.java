@@ -86,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_forecast);
         getSupportActionBar().setElevation(0f);
 
+        ConnectWearService connectWearService = new ConnectWearService();
+        connectWearService.sendWeatherToWear(this);
+
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
          * do things like set the adapter of the RecyclerView and toggle the visibility.
