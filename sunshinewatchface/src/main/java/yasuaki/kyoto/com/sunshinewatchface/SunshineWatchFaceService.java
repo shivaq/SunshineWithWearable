@@ -21,20 +21,40 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.CapabilityApi;
+import com.google.android.gms.wearable.CapabilityInfo;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Wearable;
+
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,15 +69,17 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+    private static final String TAG = SunshineWatchFaceService.class.getSimpleName();
 
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
      * displayed in interactive mode.
      */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
-    private static final String HIGH_TEMPERATURE_PATH = "/high_temperature";
-    private static final String LOW_TEMPERATURE_PATH = "/low_temperature";
-    private static final String WEATHER_IMAGE_PATH = "/weather_image";
+    private static final String HIGH_TEMPERATURE_KEY = "high_temp";
+    private static final String LOW_TEMPERATURE_KEY = "low_temp";
+    private static final String WEATHER_IMAGE_KEY = "img_weather";
+    private static final String PASS_WEATHER_DATA_PATH = "/pass_weather_data";
 
     /**
      * Handler message id for updating the time periodically in interactive mode.
@@ -89,9 +111,23 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         }
     }
 
-    private class Engine extends CanvasWatchFaceService.Engine {
+    /** Engine ****************************/
+    private class Engine extends CanvasWatchFaceService.Engine implements
+            MessageApi.MessageListener,
+            CapabilityApi.CapabilityListener,
+            GoogleApiClient.ConnectionCallbacks,
+            GoogleApiClient.OnConnectionFailedListener,
+            DataApi.DataListener{
+
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
+
+        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(SunshineWatchFaceService.this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Wearable.API)
+                .build();
+
         Paint mBackgroundPaint;
         Paint mTimePaint;
         Paint mDatePaint;
@@ -102,6 +138,10 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         Calendar mCalendar;
         Date mDate;
         String mDateString;
+        String mHighTemp;
+        String mLowTemp;
+        Bitmap mWeatheIcon;
+
         java.text.DateFormat mTimeFormat;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -136,6 +176,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                     .setShowSystemUiTime(false)
                     .setAcceptsTapEvents(true)
                     .build());
+
             Resources resources = SunshineWatchFaceService.this.getResources();
             mYOffsetForTime = resources.getDimension(R.dimen.digital_y_offset);
             mYOffsetForDate = resources.getDimension(R.dimen.digital_y_offset_for_date);
@@ -345,5 +386,91 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
+
+        @Override
+        public void onMessageReceived(MessageEvent messageEvent) {
+
+        }
+
+        @Override
+        public void onCapabilityChanged(CapabilityInfo capabilityInfo) {
+
+        }
+
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
+        }
+
+        @Override
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+        }
+
+        @Override
+        public void onDataChanged(DataEventBuffer dataEventBuffer) {
+            Log.d(TAG, "onDataChanged: " + dataEventBuffer);
+
+            for(DataEvent event: dataEventBuffer){
+                if(event.getType() == DataEvent.TYPE_CHANGED){
+                    String path = event.getDataItem().getUri().getPath();
+
+                    if(PASS_WEATHER_DATA_PATH.equals(path)){
+                        DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+
+                        Asset weatherIcon = dataMapItem.getDataMap()
+                                .getAsset(WEATHER_IMAGE_KEY);
+                        new LoadBitmapAsyncTask().execute(weatherIcon);
+
+                        mHighTemp = dataMapItem.getDataMap()
+                                .getString(HIGH_TEMPERATURE_KEY);
+                        mLowTemp = dataMapItem.getDataMap()
+                                .getString(LOW_TEMPERATURE_KEY);
+                    }
+                }
+            }
+        }
+
+        private class LoadBitmapAsyncTask extends AsyncTask<Asset, Void, Bitmap> {
+
+            @Override
+            protected Bitmap doInBackground(Asset... params) {
+
+                if (params.length > 0) {
+
+                    Asset asset = params[0];
+                    // ストリームで画像をデコードしていく
+                    InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                            mGoogleApiClient, asset).await().getInputStream();
+
+                    if (assetInputStream == null) {
+                        Log.w(TAG, "Requested an unknown Asset.");
+                        return null;
+                    }
+                    return BitmapFactory.decodeStream(assetInputStream);
+
+                } else {
+                    Log.e(TAG, "Asset must be non-null");
+                    return null;
+                }
+            }
+
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+
+                if (bitmap != null) {
+                    mWeatheIcon = bitmap;
+                }
+            }
+        }
+
     }
+
+
 }
