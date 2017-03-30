@@ -1,4 +1,4 @@
-package com.example.android.sunshine.sync;
+package com.example.android.sunshine;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -19,7 +19,6 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.CapabilityApi;
 import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -28,12 +27,14 @@ import com.google.android.gms.wearable.WearableListenerService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class MyService extends WearableListenerService implements
+import timber.log.Timber;
+
+public class ConnectWearService extends WearableListenerService implements
         GoogleApiClient.ConnectionCallbacks,
         CapabilityApi.CapabilityListener{
 
 
-    private static final String TAG = MyService.class.getSimpleName();
+    private static final String TAG = ConnectWearService.class.getSimpleName();
 
     public static final String[] WEATHER_WEAR_PROJECTION = {
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -50,39 +51,12 @@ public class MyService extends WearableListenerService implements
     private static final String WEATHER_IMAGE_KEY = "img_weather";
     private static final String PASS_WEATHER_DATA_PATH = "/pass_weather_data";
 
-    private static boolean isConnected;
     private GoogleApiClient mGoogleApiClient;
-
-    public static boolean isConnected() {
-        return isConnected;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        isConnected = false;
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .build();
-    }
-
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d(TAG, "onMessageReceived: " + messageEvent);
-        super.onMessageReceived(messageEvent);
-        if (messageEvent.getPath().equals(PASS_WEATHER_DATA_PATH)) {
-
-            // TODO: pass data to wear
-
-        }
-    }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        isConnected = true;
+        Timber.d("ConnectWearService:onConnected: isConnected: %s", mGoogleApiClient.isConnected());
         Wearable.MessageApi.addListener(mGoogleApiClient, this);
     }
 
@@ -93,13 +67,24 @@ public class MyService extends WearableListenerService implements
 
 
 
-    public static void sendWeatherToWear(Context context){
+    public void sendWeatherToWear(Context context){
 
+        mGoogleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .build();
+
+        mGoogleApiClient.connect();
+
+
+
+        Timber.d("ConnectWearService:sendWeatherToWear:mGoogleApiClient is %s", mGoogleApiClient);
         getWeatherDataForWear(context);
     }
 
-    private static void sendWeatherToWear(int high, int low, Asset asset){
+    private void sendWeatherToWear(int high, int low, Asset asset){
 
+        Timber.d("ConnectWearService:sendWeatherToWear: isConnected %s", mGoogleApiClient.isConnected());
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create(PASS_WEATHER_DATA_PATH);
 
         dataMapRequest.getDataMap().putAsset(WEATHER_IMAGE_KEY, asset);
@@ -109,8 +94,7 @@ public class MyService extends WearableListenerService implements
         PutDataRequest dataRequest = dataMapRequest.asPutDataRequest();
         dataRequest.setUrgent();
 
-        MyService myService = new MyService();
-        Wearable.DataApi.putDataItem(myService.mGoogleApiClient, dataRequest)
+        Wearable.DataApi.putDataItem(mGoogleApiClient, dataRequest)
                 .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
                     @Override
                     public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
@@ -120,7 +104,7 @@ public class MyService extends WearableListenerService implements
                 });
     }
 
-    private static void getWeatherDataForWear(Context context){
+    private void getWeatherDataForWear(Context context){
 
         Uri todaysWeatherUri = WeatherContract.WeatherEntry
                 .buildWeatherUriWithDate(SunshineDateUtils.normalizeDate(System.currentTimeMillis()));
@@ -160,7 +144,7 @@ public class MyService extends WearableListenerService implements
     }
 
 
-    private static Asset bitmapToAsset(Bitmap bitmap){
+    private Asset bitmapToAsset(Bitmap bitmap){
         ByteArrayOutputStream byteStream = null;
         try {
             byteStream = new ByteArrayOutputStream();
