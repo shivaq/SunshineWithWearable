@@ -42,6 +42,10 @@ public class SunshineSyncUtils {
     private static final int SYNC_INTERVAL_SECONDS = (int) TimeUnit.HOURS.toSeconds(SYNC_INTERVAL_HOURS);
     private static final int SYNC_FLEXTIME_SECONDS = SYNC_INTERVAL_SECONDS / 3;
 
+    private static final String HIGH_TEMPERATURE_PATH = "/high_temperature";
+    private static final String LOW_TEMPERATURE_PATH = "/low_temperature";
+    private static final String WEATHER_IMAGE_PATH = "/weather_image";
+
     private static boolean sInitialized;
 
     private static final String SUNSHINE_SYNC_TAG = "sunshine-sync";

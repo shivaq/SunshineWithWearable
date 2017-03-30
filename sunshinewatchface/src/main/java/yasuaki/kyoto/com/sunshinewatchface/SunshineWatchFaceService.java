@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
 public class SunshineWatchFaceService extends CanvasWatchFaceService {
+
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
@@ -54,6 +55,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
      * displayed in interactive mode.
      */
     private static final long INTERACTIVE_UPDATE_RATE_MS = TimeUnit.SECONDS.toMillis(1);
+    private static final String HIGH_TEMPERATURE_PATH = "/high_temperature";
+    private static final String LOW_TEMPERATURE_PATH = "/low_temperature";
+    private static final String WEATHER_IMAGE_PATH = "/weather_image";
 
     /**
      * Handler message id for updating the time periodically in interactive mode.
