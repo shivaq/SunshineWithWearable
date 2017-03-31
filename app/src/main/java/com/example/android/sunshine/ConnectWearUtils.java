@@ -37,7 +37,11 @@ public class ConnectWearUtils implements
 
     public ConnectWearUtils(Context context, Bitmap weatherIconBitmap, String highTemp, String lowTemp) {
         mContext = context;
-        mWeatherIconBitmap = weatherIconBitmap;
+//        mWeatherIconBitmap = weatherIconBitmap;
+        mWeatherIconBitmap = Bitmap.createScaledBitmap(weatherIconBitmap, 50, 50, false);
+
+
+
         mHighTemp = highTemp;
         mLowTemp = lowTemp;
         mGoogleApiClient = new GoogleApiClient.Builder(context)
