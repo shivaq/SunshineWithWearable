@@ -3,25 +3,26 @@
     <dimen name="digital_text_size">40sp</dimen>
     <dimen name="digital_text_size_round">45sp</dimen>
 
-    <dimen name="digital_x_offset">15sp</dimen>
-    <dimen name="digital_x_offset_round">25sp</dimen>
+    <dimen name="digital_x_offset">15dp</dimen>
+    <dimen name="digital_x_offset_round">25dp</dimen>
 
-    <dimen name="digital_x_offset_for_image">30sp</dimen>
-    <dimen name="digital_x_offset_for_image_round">30sp</dimen>
+    <dimen name="digital_x_offset_for_image">30dp</dimen>
+    <dimen name="digital_x_offset_for_image_round">30dp</dimen>
 
-    <dimen name="digital_x_offset_for_high">60sp</dimen>
-    <dimen name="digital_x_offset_for_high_round">60sp</dimen>
+    <dimen name="digital_x_offset_for_high">60dp</dimen>
+    <dimen name="digital_x_offset_for_high_round">60dp</dimen>
 
-    <dimen name="digital_x_offset_for_low">90sp</dimen>
-    <dimen name="digital_x_offset_for_low_round">90sp</dimen>
+    <dimen name="digital_x_offset_for_low">90dp</dimen>
+    <dimen name="digital_x_offset_for_low_round">90dp</dimen>
 
-    <dimen name="digital_y_offset">90sp</dimen>
-    <dimen name="digital_y_offset_for_date">110sp</dimen>
-    <dimen name="digital_y_offset_for_temperature">140sp</dimen>
+    <dimen name="digital_y_offset">90dp</dimen>
+    <dimen name="digital_y_offset_for_date">110dp</dimen>
+    <dimen name="digital_y_offset_for_temperature">140dp</dimen>
+
+    <dimen name="digital_y_offset_for_weather_icon">10dp</dimen>
+    <dimen name="digital_x_offset_unit">4dp</dimen>
 
     <dimen name="text_date" >12sp</dimen>
     <dimen name="text_temperature" >20sp</dimen>
-    <dimen name="digital_y_offset_for_weather_icon">10sp</dimen>
-
 
 </resources>
