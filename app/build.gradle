@@ -41,5 +41,5 @@ dependencies {
     compile 'com.jakewharton.timber:timber:4.5.1'
 
     wearApp project(':sunshinewatchface')
-    compile 'com.google.android.gms:play-services-wearable:10.2.1'
+    compile 'com.google.android.gms:play-services-wearable:9.0.2'
 }

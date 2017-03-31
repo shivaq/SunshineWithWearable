@@ -134,8 +134,6 @@ public class SunshineSyncTask {
                 resources,
                 smallArtResourceId);
 
-//                int high = ((Double) todayWeatherCursor.getDouble(INDEX_MAX_TEMP)).intValue();
-//                int low = ((Double) todayWeatherCursor.getDouble(INDEX_MIN_TEMP)).intValue();
         double high = weatherValues[0].getAsDouble(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
         double low = weatherValues[0].getAsDouble(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
         String highTemp = SunshineWeatherUtils.formatTemperature(context, high);

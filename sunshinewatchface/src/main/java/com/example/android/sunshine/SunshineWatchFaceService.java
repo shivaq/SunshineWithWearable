@@ -111,13 +111,15 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         }
     }
 
-    /** Engine ****************************/
+    /**
+     * Engine
+     ****************************/
     private class Engine extends CanvasWatchFaceService.Engine implements
             MessageApi.MessageListener,
             CapabilityApi.CapabilityListener,
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener,
-            DataApi.DataListener{
+            DataApi.DataListener {
 
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
@@ -129,6 +131,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         Paint mDatePaint;
         Paint mHighTempPaint;
         Paint mLowTempPaint;
+        Paint mIconPaint;
 
         boolean mAmbient;
         Calendar mCalendar;
@@ -136,9 +139,11 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         String mDateString;
         String mHighTemp = getString(R.string.no_weather_data);
         String mLowTemp = getString(R.string.no_weather_data);
-        Bitmap mWeatheIcon;
+        Bitmap mWeatherIcon = BitmapFactory.decodeResource(getBaseContext().getResources(),
+                R.drawable.close_button);
 
         java.text.DateFormat mTimeFormat;
+
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -184,6 +189,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                     .setAcceptsTapEvents(true)
                     .build());
 
+            mWeatherIcon = BitmapFactory.decodeResource(getBaseContext().getResources(),
+                    R.drawable.ic_launcher);
+
             Resources resources = SunshineWatchFaceService.this.getResources();
             mYOffsetForTime = resources.getDimension(R.dimen.digital_y_offset);
             mYOffsetForDate = resources.getDimension(R.dimen.digital_y_offset_for_date);
@@ -209,6 +217,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             mLowTempPaint = createTextPaint(resources.getColor(R.color.colorPrimaryLight));
             mLowTempPaint.setTextSize(mTemperatureTextSize);
 
+            mIconPaint = new Paint();
+
+
             mCalendar = Calendar.getInstance();
             mDate = new Date();
             mDateString = (android.text.format.DateFormat.format("EEE, MMM dd yyyy", mCalendar)).toString();
@@ -220,6 +231,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            mGoogleApiClient.disconnect();
             super.onDestroy();
         }
 
@@ -347,7 +359,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            Log.d(TAG, "onDraw: ");
             // Draw the background.
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
@@ -373,6 +384,12 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 //            String lowTemp = "16°";
             String lowTemp = mLowTemp;
             canvas.drawText(lowTemp, mXOffsetForLow, mYOffsetForTemperature, mLowTempPaint);
+
+            Bitmap weatherIcon = mWeatherIcon;
+            Log.d(TAG, "onDraw: mWeatherIcon is " + mWeatherIcon );
+            if (mWeatherIcon != null) {
+                canvas.drawBitmap(weatherIcon, mXOffsetForLow, mYOffsetForTemperature, mIconPaint);
+            }
         }
 
         /**
@@ -426,6 +443,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onConnectionSuspended(int i) {
+            Wearable.DataApi.removeListener(mGoogleApiClient, this);
             Log.d(TAG, "onConnectionSuspended: ");
         }
 
@@ -438,11 +456,11 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         public void onDataChanged(DataEventBuffer dataEventBuffer) {
             Log.d(TAG, "onDataChanged: " + dataEventBuffer);
 
-            for(DataEvent event: dataEventBuffer){
-                if(event.getType() == DataEvent.TYPE_CHANGED){
+            for (DataEvent event : dataEventBuffer) {
+                if (event.getType() == DataEvent.TYPE_CHANGED) {
                     String path = event.getDataItem().getUri().getPath();
 
-                    if(PASS_WEATHER_DATA_PATH.equals(path)){
+                    if (PASS_WEATHER_DATA_PATH.equals(path)) {
                         DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
 
                         Asset weatherIcon = dataMapItem.getDataMap()
@@ -486,7 +504,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             protected void onPostExecute(Bitmap bitmap) {
 
                 if (bitmap != null) {
-                    mWeatheIcon = bitmap;
+                    mWeatherIcon = bitmap;
                 }
             }
         }
