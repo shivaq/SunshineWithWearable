@@ -32,6 +32,8 @@ import com.firebase.jobdispatcher.Trigger;
 
 import java.util.concurrent.TimeUnit;
 
+import timber.log.Timber;
+
 public class SunshineSyncUtils {
 
     /*
@@ -107,6 +109,7 @@ public class SunshineSyncUtils {
      *                ContentResolver
      */
     synchronized public static void initialize(@NonNull final Context context) {
+        Timber.d("SunshineSyncUtils:initialize: ");
 
         /*
          * Only perform initialization once per app lifetime. If initialization has already been

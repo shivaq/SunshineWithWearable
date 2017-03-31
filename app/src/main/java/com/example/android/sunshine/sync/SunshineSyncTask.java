@@ -18,15 +18,22 @@ package com.example.android.sunshine.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.format.DateUtils;
 
+import com.example.android.sunshine.ConnectWearUtils;
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
 import com.example.android.sunshine.utilities.NotificationUtils;
 import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
+import com.example.android.sunshine.utilities.SunshineWeatherUtils;
 
 import java.net.URL;
+
+import timber.log.Timber;
 
 public class SunshineSyncTask {
 
@@ -39,7 +46,7 @@ public class SunshineSyncTask {
      * @param context Used to access utility methods and the ContentResolver
      */
     synchronized public static void syncWeather(Context context) {
-
+        Timber.d("SunshineSyncTask:syncWeather: ");
         try {
             /*
              * The getUrl method will return the URL that we need to get the forecast JSON for the
@@ -104,6 +111,7 @@ public class SunshineSyncTask {
                     NotificationUtils.notifyUserOfNewWeather(context);
                 }
 
+                retrieveDataForWearable(context, weatherValues);
             /* If the code reaches this point, we have successfully performed our sync */
 
             }
@@ -112,5 +120,25 @@ public class SunshineSyncTask {
             /* Server probably invalid */
             e.printStackTrace();
         }
+    }
+
+    private static void retrieveDataForWearable(Context context, ContentValues[] weatherValues) {
+
+        int weatherId = weatherValues[0].getAsInteger(
+                WeatherContract.WeatherEntry.COLUMN_WEATHER_ID);
+        int smallArtResourceId = SunshineWeatherUtils
+                .getSmallArtResourceIdForWeatherCondition(weatherId);
+
+        Resources resources = context.getResources();
+        Bitmap smallIcon = BitmapFactory.decodeResource(
+                resources,
+                smallArtResourceId);
+
+        double high = weatherValues[0].getAsDouble(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
+        double low = weatherValues[0].getAsDouble(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
+        String highTemp = SunshineWeatherUtils.formatTemperature(context, high);
+        String lowTemp = SunshineWeatherUtils.formatTemperature(context, low);
+
+        new ConnectWearUtils(context, smallIcon, highTemp, lowTemp);
     }
 }
