@@ -43,6 +43,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.CapabilityApi;
 import com.google.android.gms.wearable.CapabilityInfo;
@@ -52,12 +53,16 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -80,6 +85,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
     private static final String LOW_TEMPERATURE_KEY = "low_temp";
     private static final String WEATHER_IMAGE_KEY = "img_weather";
     private static final String PASS_WEATHER_DATA_PATH = "/pass_weather_data";
+    private static final String START_SYNC_PATH = "/start_sync";
 
     /**
      * Handler message id for updating the time periodically in interactive mode.
@@ -225,6 +231,10 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             mDateString = (android.text.format.DateFormat.format("EEE, MMM dd yyyy", mCalendar)).toString();
             mTimeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
 
+            if(mHighTemp.equals(getString(R.string.no_weather_data))){
+                askPhoneToSyncData();
+            }
+            Log.d(TAG, "onCreate: mHighTemp is "+ mHighTemp);
         }
 
 
@@ -475,6 +485,59 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 }
             }
         }
+
+        private void askPhoneToSyncData(){
+            new AskPhoneAsyncTask().execute();
+        }
+
+        private class AskPhoneAsyncTask extends AsyncTask<Void, Void, Void> {
+
+            @Override
+            protected Void doInBackground(Void... args) {
+                Collection<String> nodes = getNodes();
+                for (String node : nodes) {
+                    sendStartSyncMessage(node);
+                }
+                return null;
+            }
+        }
+
+
+        private Collection<String> getNodes() {
+            HashSet<String> results = new HashSet<>();
+
+            NodeApi.GetConnectedNodesResult nodes =
+                    Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await();
+
+            for (Node node : nodes.getNodes()) {
+                results.add(node.getId());
+            }
+            return results;
+        }
+
+
+
+        private void sendStartSyncMessage(String node) {
+
+            Wearable.MessageApi.sendMessage(
+                    mGoogleApiClient, node, START_SYNC_PATH,
+                    new byte[0]).setResultCallback(
+                    new ResultCallback<MessageApi.SendMessageResult>() {
+                        @Override
+                        public void onResult(MessageApi.SendMessageResult sendMessageResult) {
+                            if (!sendMessageResult.getStatus().isSuccess()) {
+                                Log.e(TAG, "Failed to send message with status code: "
+                                        + sendMessageResult.getStatus().getStatusCode());
+                            }
+                        }
+                    }
+            );
+        }
+
+
+
+
+
 
         private class LoadBitmapAsyncTask extends AsyncTask<Asset, Void, Bitmap> {
 
