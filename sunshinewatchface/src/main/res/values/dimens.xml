@@ -18,8 +18,10 @@
     <dimen name="digital_y_offset">90sp</dimen>
     <dimen name="digital_y_offset_for_date">110sp</dimen>
     <dimen name="digital_y_offset_for_temperature">140sp</dimen>
+
     <dimen name="text_date" >12sp</dimen>
     <dimen name="text_temperature" >20sp</dimen>
+    <dimen name="digital_y_offset_for_weather_icon">10sp</dimen>
 
 
 </resources>
